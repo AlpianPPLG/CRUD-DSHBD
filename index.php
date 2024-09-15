@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
 <div class="container mt-5">
-    <h1 class="text-center">Daftar Orang</h1>
+    <h1 class="text-left">Daftar Orang</h1>
 
     <!-- Tombol Pencarian, Filter, Tambah Orang, dan Ekspor Data -->
     <div class="d-flex justify-content-end mb-3">
