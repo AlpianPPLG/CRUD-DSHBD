@@ -58,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Orang</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
         .footer-link {
             color: black;
@@ -65,6 +66,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         .footer-link:hover {
             text-decoration: underline;
+        }
+        .modal-dialog {
+            max-width: 90%;
+            margin: 1.75rem auto;
         }
     </style>
 </head>
@@ -92,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <th>Aksi</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="data-table-body">
             <?php foreach ($data as $row) { ?>
                 <tr>
                     <td><?php echo $row['id']; ?></td>
@@ -169,7 +174,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <!-- Footer -->
 <footer class="bg-light text-center py-3">
-    <p class="mb-0">Created By <a href="https://github.com/AlpianPPLG" class="footer-link" target="_blank">Alpian</a></p>
+    <p class="mb-0">
+        Created By <a href="https://github.com/AlpianPPLG" class="footer-link" target="_blank">Alpian</a> | 
+        <a href="help.php" class="footer-link">Help</a>
+    </p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
