@@ -2,14 +2,29 @@
 // Memasukkan koneksi database
 include 'koneksi.php';
 
-// Mengambil data dari database
-$sql = "SELECT * FROM orang ORDER BY id";
-$result = $conn->query($sql);
+// Pengaturan pagination
+$limit = 5; // Jumlah data per halaman
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$page = ($page > 0) ? $page : 1;
+$start = ($page - 1) * $limit;
+
+// Query untuk menghitung total data
+$totalResult = $conn->query("SELECT COUNT(*) AS total FROM orang");
+$totalRow = $totalResult->fetch_assoc();
+$totalData = $totalRow['total'];
+$totalPages = ceil($totalData / $limit);
+
+// Query untuk mengambil data berdasarkan halaman
+$sql = "SELECT * FROM orang ORDER BY id LIMIT ?, ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ii", $start, $limit);
+$stmt->execute();
+$result = $stmt->get_result();
 
 // Menyimpan data dari database ke dalam array
 $data = [];
 if ($result->num_rows > 0) {
-    while($row = $result->fetch_assoc()) {
+    while ($row = $result->fetch_assoc()) {
         $data[] = $row;
     }
 }
@@ -26,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->bind_param("ssss", $nama, $email, $telepon, $alamat);
 
     if ($stmt->execute()) {
-        header("Location: index.php");
+        header("Location: index.php?page=$page"); // Mengarahkan kembali ke halaman yang sama
         exit();
     } else {
         echo "Error: " . $stmt->error;
@@ -43,11 +58,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Orang</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <style>
+        .footer-link {
+            color: black;
+            text-decoration: none;
+        }
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
 <div class="container mt-5">
     <h1 class="text-center">Daftar Orang</h1>
+
+    <!-- Tombol Pencarian, Filter, Tambah Orang, dan Ekspor Data -->
     <div class="d-flex justify-content-end mb-3">
+        <a href="cari.php" class="btn btn-secondary me-2">Cari Data Orang</a>
+        <a href="filter.php" class="btn btn-secondary me-2">Filter Data Orang</a>
+        <a href="export.php" class="btn btn-success me-2">Export Data</a>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">Tambah Orang</button>
     </div>
 
@@ -73,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <td><?php echo $row['alamat']; ?></td>
                     <td>
                         <a href="edit.php?id=<?php echo $row['id']; ?>" class="btn btn-warning btn-sm">Edit</a>
-                        <form method="POST" action="delete.php" style="display:inline;">
+                        <form method="POST" action="delete.php" style="display:inline;" onsubmit="return confirmDelete();">
                             <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
                             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                         </form>
@@ -82,6 +111,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php } ?>
         </tbody>
     </table>
+
+    <!-- Pagination -->
+    <nav>
+        <ul class="pagination">
+            <li class="page-item">
+                <a class="page-link" href="index.php?page=<?php echo max(1, $page - 1); ?>" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            <?php for ($i = 1; $i <= $totalPages; $i++) { ?>
+                <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
+                    <a class="page-link" href="index.php?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                </li>
+            <?php } ?>
+            <li class="page-item">
+                <a class="page-link" href="index.php?page=<?php echo min($totalPages, $page + 1); ?>" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 </div>
 
 <!-- Modal Form Tambah Orang -->
@@ -117,6 +167,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   </div>
 </div>
 
+<!-- Footer -->
+<footer class="bg-light text-center py-3">
+    <p class="mb-0">Created By <a href="https://github.com/AlpianPPLG" class="footer-link" target="_blank">Alpian</a></p>
+</footer>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function confirmDelete() {
+        return confirm("Apakah Anda yakin ingin menghapus data ini?");
+    }
+</script>
 </body>
 </html>

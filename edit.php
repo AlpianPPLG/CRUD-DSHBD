@@ -74,6 +74,7 @@ $conn->close();
             <input type="text" class="form-control" id="alamat" name="alamat" value="<?php echo $row['alamat']; ?>" required>
         </div>
         <button type="submit" class="btn btn-primary">Simpan</button>
+        <a href="index.php" class="btn btn-secondary">Batal</a> <!-- Tombol Batal -->
     </form>
 </div>
 
