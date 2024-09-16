@@ -29,25 +29,42 @@ if ($result->num_rows > 0) {
     }
 }
 
-// Proses form jika ada input dari user
+// Variabel pesan
+$message = '';
+$messageType = '';
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nama = $_POST['nama'];
     $email = $_POST['email'];
     $telepon = $_POST['telepon'];
     $alamat = $_POST['alamat'];
 
-    // Menambah data user ke database
-    $stmt = $conn->prepare("INSERT INTO orang (nama, email, telepon, alamat) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $nama, $email, $telepon, $alamat);
+    // Cek apakah data sudah ada di database
+    $checkStmt = $conn->prepare("SELECT COUNT(*) AS count FROM orang WHERE email = ?");
+    $checkStmt->bind_param("s", $email);
+    $checkStmt->execute();
+    $checkResult = $checkStmt->get_result();
+    $checkRow = $checkResult->fetch_assoc();
 
-    if ($stmt->execute()) {
-        header("Location: index.php?page=$page"); // Mengarahkan kembali ke halaman yang sama
-        exit();
+    if ($checkRow['count'] > 0) {
+        // Data sudah ada
+        $message = 'Data yang Anda buat telah digunakan.';
+        $messageType = 'danger'; // Pesan kesalahan
     } else {
-        echo "Error: " . $stmt->error;
-    }
+        // Menambah data user ke database
+        $stmt = $conn->prepare("INSERT INTO orang (nama, email, telepon, alamat) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $nama, $email, $telepon, $alamat);
 
-    $stmt->close();
+        if ($stmt->execute()) {
+            $message = 'Data berhasil ditambahkan.';
+            $messageType = 'success'; // Pesan sukses
+        } else {
+            $message = 'Error: ' . $stmt->error;
+            $messageType = 'danger'; // Pesan kesalahan
+        }
+
+        $stmt->close();
+    }
 }
 ?>
 
@@ -76,6 +93,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
 <div class="container mt-5">
     <h1 class="text-left">Daftar Orang</h1>
+
+    <!-- Pesan Kesalahan atau Sukses -->
+    <?php if ($message) { ?>
+        <div class="alert alert-<?php echo $messageType; ?>" role="alert">
+            <?php echo $message; ?>
+        </div>
+    <?php } ?>
 
     <!-- Tombol Pencarian, Filter, Tambah Orang, dan Ekspor Data -->
     <div class="d-flex justify-content-end mb-3">
@@ -176,15 +200,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <footer class="bg-light text-center py-3">
     <p class="mb-0">
         Created By <a href="https://github.com/AlpianPPLG" class="footer-link" target="_blank">Alpian</a> | 
-        <a href="help.php" class="footer-link">Help</a>
+        <a href="help.php" class="        footer-link">Help</a>
     </p>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Script untuk konfirmasi penghapusan data -->
 <script>
     function confirmDelete() {
-        return confirm("Apakah Anda yakin ingin menghapus data ini?");
+        return confirm('Apakah Anda yakin ingin menghapus data ini?');
     }
 </script>
-</body>
+
+<!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    </body>
 </html>
